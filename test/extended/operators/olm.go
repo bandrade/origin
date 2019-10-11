@@ -76,19 +76,14 @@ var _ = g.Describe("[Feature:Platform] OLM should", func() {
 	// OCP-21082 - Implement packages API server and list packagemanifest info with namespace not NULL
 	// author: bandrade@redhat.com
 	g.It("Implement packages API server and list packagemanifest info with namespace not NULL", func() {
-		msg, err := oc.AsAdmin().WithoutNamespace().Run("get").Args("packagemanifest", "--all-namespaces", "-o=jsonpath={range .items[*]}{.metadata.name};{.status.catalogSourceNamespace}{\"\\n\"}").Output()
-		if err != nil {
-			e2e.Failf("Unable to get %s, error:%v", msg, err)
-		}
+		msg, err := oc.AsAdmin().WithoutNamespace().Run("get").Args("packagemanifest", "--all-namespaces", "--no-headers").Output()
+		o.Expect(err).NotTo(o.HaveOccurred())
 		for _, packageManifest := range strings.Split(msg, "\n") {
-			packageManifestItems := strings.Split(packageManifest, ";")
-			for _, item := range packageManifestItems {
-				if item == "" {
-					e2e.Failf("It should display a namespace for CSV: %s [ref:bz1670311]", packageManifestItems[0])
-				}
+			fields := strings.Fields(packageManifest)
+			if string(fields[0]) == " " && len(fields) < 4 {
+				e2e.Failf("It should display a namespace for CSV: %s [ref:bz1670311]", packageManifest)
 			}
 		}
-		o.Expect(err).NotTo(o.HaveOccurred())
 	})
 
 })
