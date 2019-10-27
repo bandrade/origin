@@ -95,11 +95,15 @@ var _ = g.Describe("[Feature:Platform] OLM should", func() {
 	g.It("Implement packages API server and list packagemanifest info with namespace not NULL", func() {
 		msg, err := oc.AsAdmin().WithoutNamespace().Run("get").Args("packagemanifest", "--all-namespaces", "--no-headers").Output()
 		o.Expect(err).NotTo(o.HaveOccurred())
-		for _, packageManifest := range strings.Split(msg, "\n") {
-			fields := strings.Fields(packageManifest)
-			if string(fields[0]) == " " && len(fields) < 4 {
-				e2e.Failf("It should display a namespace for CSV: %s [ref:bz1670311]", packageManifest)
+		var packageserverLine string
+		for _, line := range strings.Split(msg, "\n") {
+			if strings.Contains(line, "etcd") {
+				packageserverLine = line
+				break
 			}
+		}
+		if !strings.Contains(packageserverLine, "openshift-marketplace") {
+			e2e.Failf("It should display a namespace for CSV: %s [ref:bz1670311]", packageserverLine)
 		}
 	})
 
