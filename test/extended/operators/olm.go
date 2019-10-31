@@ -6,8 +6,6 @@ import (
 
 	g "github.com/onsi/ginkgo"
 	o "github.com/onsi/gomega"
-	e2e "k8s.io/kubernetes/test/e2e/framework"
-
 	exutil "github.com/openshift/origin/test/extended/util"
 	e2e "k8s.io/kubernetes/test/e2e/framework"
 )
@@ -74,7 +72,6 @@ var _ = g.Describe("[Feature:Platform] OLM should", func() {
 			}
 		})
 	}
-
 
 	// OCP-24061 - [bz 1685230] OLM operator should use imagePullPolicy: IfNotPresent
 	// author: bandrade@redhat.com
