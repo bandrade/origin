@@ -75,6 +75,7 @@ var _ = g.Describe("[Feature:Platform] OLM should", func() {
 		})
 	}
 
+
 	// OCP-24061 - [bz 1685230] OLM operator should use imagePullPolicy: IfNotPresent
 	// author: bandrade@redhat.com
 	g.It("have imagePullPolicy:IfNotPresent on thier deployments", func() {
