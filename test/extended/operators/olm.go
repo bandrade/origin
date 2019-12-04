@@ -2,6 +2,7 @@ package operators
 
 import (
 	"fmt"
+	"strings"
 
 	g "github.com/onsi/ginkgo"
 	o "github.com/onsi/gomega"
@@ -87,4 +88,22 @@ var _ = g.Describe("[Feature:Platform] OLM should", func() {
 			o.Expect(msg).To(o.Equal("IfNotPresent"))
 		}
 	})
+
+	// OCP-21082 - Implement packages API server and list packagemanifest info with namespace not NULL
+	// author: bandrade@redhat.com
+	g.It("Implement packages API server and list packagemanifest info with namespace not NULL", func() {
+		msg, err := oc.AsAdmin().WithoutNamespace().Run("get").Args("packagemanifest", "--all-namespaces", "--no-headers").Output()
+		o.Expect(err).NotTo(o.HaveOccurred())
+		var packageserverLine string
+		for _, line := range strings.Split(msg, "\n") {
+			if strings.Contains(line, "etcd") {
+				packageserverLine = line
+				break
+			}
+		}
+		if !strings.Contains(packageserverLine, "openshift-marketplace") {
+			e2e.Failf("It should display a namespace for CSV: %s [ref:bz1670311]", packageserverLine)
+		}
+	})
+
 })
