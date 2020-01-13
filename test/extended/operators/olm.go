@@ -2,14 +2,15 @@ package operators
 
 import (
 	"fmt"
+	"path/filepath"
+	"strings"
+	"time"
+
 	g "github.com/onsi/ginkgo"
 	o "github.com/onsi/gomega"
 	exutil "github.com/openshift/origin/test/extended/util"
 	"k8s.io/apimachinery/pkg/util/wait"
 	e2e "k8s.io/kubernetes/test/e2e/framework"
-	"path/filepath"
-	"strings"
-	"time"
 )
 
 var _ = g.Describe("[Feature:Platform] OLM should", func() {
@@ -167,5 +168,20 @@ var _ = g.Describe("[Feature:Platform] an end user use OLM", func() {
 		output, err := oc.Run("get").Args("pods", "-n", oc.Namespace()).Output()
 		o.Expect(err).NotTo(o.HaveOccurred())
 		o.Expect(output).To(o.ContainSubstring(etcdClusterName))
+	})
+
+	// OCP-24829 - Report `Upgradeable` in OLM ClusterOperators status
+	// author: bandrade@redhat.com
+	g.It("Report Upgradeable in OLM ClusterOperators status", func() {
+		olmCOs := []string{"operator-lifecycle-manager", "operator-lifecycle-manager-catalog", "operator-lifecycle-manager-packageserver"}
+		for _, co := range olmCOs {
+			msg, err := oc.AsAdmin().WithoutNamespace().Run("get").Args("co", co, "-o=jsonpath={range .status.conditions[*]}{.type}{' '}{.status}").Output()
+			if err != nil {
+				e2e.Failf("Unable to get co %s status, error:%v", msg, err)
+			}
+			o.Expect(err).NotTo(o.HaveOccurred())
+			o.Expect(msg).To(o.ContainSubstring("Upgradeable True"))
+		}
+
 	})
 })
